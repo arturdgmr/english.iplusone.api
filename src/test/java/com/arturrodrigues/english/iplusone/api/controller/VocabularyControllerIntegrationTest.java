@@ -56,6 +56,23 @@ class VocabularyControllerIntegrationTest {
     }
 
     @Test
+    void reimportReportsAllExtractedWordsEvenWhenAlreadyKnown() throws Exception {
+        byte[] pdf = PdfTestFactory.pdfWithLines("I like soccer.", "House, Car and Family.");
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "vocab.pdf", "application/pdf", pdf);
+
+        mockMvc.perform(multipart("/api/vocabulary/import").file(file))
+                .andExpect(status().isCreated());
+
+        // Re-importing the same PDF still reports all 7 extracted words, while the
+        // total known words stays unchanged.
+        mockMvc.perform(multipart("/api/vocabulary/import").file(file))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.importedWords").value(7))
+                .andExpect(jsonPath("$.knownWords").value(7));
+    }
+
+    @Test
     void importRejectsEmptyFile() throws Exception {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "empty.pdf", "application/pdf", new byte[0]);

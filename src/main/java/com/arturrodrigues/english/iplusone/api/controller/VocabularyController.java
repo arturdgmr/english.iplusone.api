@@ -47,9 +47,9 @@ public class VocabularyController {
         }
 
         Set<String> words = extractor.extractWords(bytes);
-        int imported = vocabularyService.addWords(words);
+        vocabularyService.addWords(words);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ImportResponse(imported, vocabularyService.count()));
+                .body(new ImportResponse(words.size(), vocabularyService.count()));
     }
 
     @GetMapping("/stats")
