@@ -2,29 +2,27 @@ package com.arturrodrigues.english.iplusone.api.client;
 
 import java.util.List;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 
 import com.arturrodrigues.english.iplusone.api.client.dto.ChatCompletionRequest;
 import com.arturrodrigues.english.iplusone.api.client.dto.ChatCompletionResponse;
 import com.arturrodrigues.english.iplusone.api.config.OpenAiProperties;
 import com.arturrodrigues.english.iplusone.api.exception.OpenAiCommunicationException;
 
+import feign.FeignException;
+
 /**
- * Default {@link OpenAiClient} implementation backed by a {@link RestClient}
- * pointed at the OpenAI chat completions endpoint.
+ * Default {@link OpenAiClient} implementation backed by the declarative
+ * {@link OpenAiFeignClient} pointed at the OpenAI chat completions endpoint.
  */
 @Component
 public class OpenAiChatClient implements OpenAiClient {
 
-    private final RestClient restClient;
+    private final OpenAiFeignClient feignClient;
     private final OpenAiProperties properties;
 
-    public OpenAiChatClient(RestClient openAiRestClient, OpenAiProperties properties) {
-        this.restClient = openAiRestClient;
+    public OpenAiChatClient(OpenAiFeignClient feignClient, OpenAiProperties properties) {
+        this.feignClient = feignClient;
         this.properties = properties;
     }
 
@@ -44,14 +42,8 @@ public class OpenAiChatClient implements OpenAiClient {
 
         ChatCompletionResponse response;
         try {
-            response = restClient.post()
-                    .uri("/chat/completions")
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + properties.getApiKey())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(request)
-                    .retrieve()
-                    .body(ChatCompletionResponse.class);
-        } catch (RestClientException ex) {
+            response = feignClient.chatCompletions("Bearer " + properties.getApiKey(), request);
+        } catch (FeignException ex) {
             throw new OpenAiCommunicationException("Failed to communicate with OpenAI: " + ex.getMessage(), ex);
         }
 

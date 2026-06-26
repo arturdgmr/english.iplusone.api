@@ -35,7 +35,7 @@ unknown word, and validates the result before returning it.
 
 ```
 src/main/java/com/arturrodrigues/english/iplusone/api
-├── client      # OpenAI client abstraction + RestClient based implementation
+├── client      # OpenAI client abstraction + OpenFeign based implementation
 ├── config      # OpenAI configuration properties and beans
 ├── controller  # REST controllers
 ├── exception   # Custom exceptions + global @RestControllerAdvice

@@ -1,27 +1,27 @@
 package com.arturrodrigues.english.iplusone.api.config;
 
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.RestClient;
+
+import feign.Request;
 
 /**
- * Wires the {@link RestClient} used to talk to the OpenAI API, applying the
- * configured base URL and timeouts.
+ * Enables the {@link OpenAiProperties} binding and applies the configured
+ * timeout to the OpenFeign client used to talk to the OpenAI API.
  */
 @Configuration
 @EnableConfigurationProperties(OpenAiProperties.class)
 public class OpenAiConfig {
 
     @Bean
-    public RestClient openAiRestClient(OpenAiProperties properties) {
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout((int) properties.getTimeout().toMillis());
-        factory.setReadTimeout((int) properties.getTimeout().toMillis());
-        return RestClient.builder()
-                .baseUrl(properties.getBaseUrl())
-                .requestFactory(factory)
-                .build();
+    public Request.Options openAiFeignOptions(OpenAiProperties properties) {
+        long timeoutMillis = properties.getTimeout().toMillis();
+        return new Request.Options(
+                timeoutMillis, TimeUnit.MILLISECONDS,
+                timeoutMillis, TimeUnit.MILLISECONDS,
+                true);
     }
 }
